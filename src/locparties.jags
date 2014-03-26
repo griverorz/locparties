@@ -1,0 +1,17 @@
+model {
+    ## Missing data
+    for (j in 1:Nnoobs) {
+        ymiss[j, noobs[j, 2]] ~ dnorm(muhat[j], 
+                                      Tau[noobs[j, 2], noobs[j, 2], Pnoobs[j]])
+        muhat[j] <- mu[noobs[j, 2], Pnoobs[j]]
+    }
+    ## Observed data likelihood
+    for (i in 1:N) {
+        y[i,] ~ dmnorm(mu[, P[i]], Tau[, , P[i]])
+    }
+    ## Priors
+    for (cl in 1:Ncluster) {
+        mu[1:2, cl] ~ dmnorm(muCluster, tauCluster[,])
+        Tau[1:2, 1:2, cl] ~ dwish(Omega, lambda)
+    }
+}
