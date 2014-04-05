@@ -114,11 +114,11 @@ param_party <- function(simulation, party) {
                 "Tau" = as.matrix(simulation[, Tau])))
 }
 
-simulate_party <- function(simulation, party) {
+simulate_party <- function(simulation, party, factor = 10) {
     params <- param_party(simulation, party)
     nn <- nrow(params$mu)
-    outlist <- vector("list", 5*nn)
-    for (i in 1:(5*nn)) {
+    outlist <- vector("list", factor*nn)
+    for (i in 1:(factor*nn)) {
         muv <- params$mu[((i - 1) %% nn) + 1, ]
         Tauv <- matrix(params$Tau[((i - 1) %% nn) + 1, ], nrow = 2, ncol = 2)        
         outlist[[i]] <- rmvnorm(1, muv, Tauv)
@@ -135,9 +135,18 @@ simvalues <- do.call(rbind, simvalues)
 simvalues <- as.data.frame(simvalues)
 names(simvalues) <- c("ideo", "nacl", "party")
 
-ggplot(simvalues, aes(x = ideo, y = nacl, group = party)) + 
-    stat_density2d() + 
-    scale_x_continuous(limits = c(1, 10)) + 
-    scale_y_continuous(limits = c(1, 10)) +
+theme_set(theme_bw())
+p <- ggplot(simvalues, aes(x=ideo, y=nacl, group=party, colour=factor(party))) 
+pq <- p + stat_density2d(n=50) + 
+    geom_point(alpha = 0.1, size = 1.25) + 
+    scale_colour_brewer("Party", breaks=1:4, 
+                        labels=c("PP", "PSOE", "AGE", "BNG"),
+                        type="div", palette="Set1") +
+    scale_x_continuous(limits=c(1, 10)) + 
+    scale_y_continuous(limits=c(1, 10)) +
+    labs(title="Electoral representation in Galicia") +
     xlab("Ideology") + 
     ylab("Nationalism")
+print(pq)
+
+ggsave("img/locparties.png", pq)
